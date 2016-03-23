@@ -32,12 +32,16 @@ module Gcloud
       def initialize project, credentials
         @project = project
         @credentials = credentials
-        @host = "pubsub.googleapis.com"
+        @host = ENV['PUBSUB_EMULATOR_HOST'] || "pubsub.googleapis.com"
       end
 
       def creds
-        GRPC::Core::ChannelCredentials.new.compose \
-          GRPC::Core::CallCredentials.new credentials.client.updater_proc
+        if ENV['PUBSUB_EMULATOR_HOST']
+          :this_channel_is_insecure
+        else
+          GRPC::Core::ChannelCredentials.new.compose \
+            GRPC::Core::CallCredentials.new credentials.client.updater_proc
+        end
       end
 
       def subscriber
